@@ -1,0 +1,22 @@
+#############
+# Functions #
+#############
+
+define packer_build
+  packer build \
+		$(if $(MANALA_PACKER_FORCE), \
+			-force \
+		) \
+		$(if $(MANALA_PACKER_VAR), \
+			$(foreach \
+				VAR,\
+				$(call encode_spaces,$(MANALA_PACKER_VAR)),\
+				-var '$(call decode_spaces,$(VAR))' \
+			) \
+		) \
+		$(if $(MANALA_PACKER_ONLY), \
+			-only=$(MANALA_PACKER_ONLY) \
+		) \
+    -timestamp-ui=true \
+  	$(MANALA_PACKER_TEMPLATE)
+endef

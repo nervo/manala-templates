@@ -1,0 +1,5 @@
+###############
+# Directories #
+###############
+
+MANALA_ANSIBLE_DIR := $(MANALA_DIR)/ansible

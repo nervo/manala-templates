@@ -1,0 +1,38 @@
+###############
+# Directories #
+###############
+
+MANALA_VAGRANT_DIR := $(MANALA_DIR)/vagrant
+
+#############
+# Functions #
+#############
+
+define vagrant_box_add
+  vagrant box add \
+		$(MANALA_VAGRANT_BOX) \
+		$(if $(MANALA_VAGRANT_BOX_NAME), \
+			--name $(MANALA_VAGRANT_BOX_NAME) \
+		) \
+		$(if $(MANALA_VAGRANT_BOX_VERSION), \
+			--box-version $(MANALA_VAGRANT_BOX_VERSION) \
+		) \
+		$(if $(MANALA_VAGRANT_FORCE), \
+			--force \
+		)
+endef
+
+define vagrant_destroy
+  vagrant destroy \
+		$(if $(MANALA_VAGRANT_FORCE), \
+			--force \
+		)
+endef
+
+define vagrant_up
+  vagrant up
+endef
+
+define vagrant_ssh
+  vagrant ssh
+endef
