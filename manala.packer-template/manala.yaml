@@ -1,2 +1,7 @@
 manala:
   description: Manala - Packer Template
+  sync:
+    - .manala
+    - .env.dist
+    - .gitignore
+    - dist/.gitignore

@@ -1,2 +1,8 @@
 manala:
   description: Manala - Debian Package
+  sync:
+    - .manala
+    - .gitignore
+    - .travis.yml
+    - build/.gitignore
+    - dist/.gitignore

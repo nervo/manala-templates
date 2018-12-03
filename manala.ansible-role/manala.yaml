@@ -1,2 +1,7 @@
 manala:
   description: Manala - Ansible Role
+  sync:
+    - .manala
+    - .gitignore
+    - .travis.yml
+    - tests/.gitignore
