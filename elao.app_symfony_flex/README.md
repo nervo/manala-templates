@@ -2,6 +2,10 @@
 
 ## Jenkins
 
+Resources:
+* https://jenkins.io/doc/book/pipeline/syntax/#parallel
+* https://jenkins.io/blog/2018/07/02/whats-new-declarative-piepline-13x-sequential-stages/
+
 ```groovy
 pipeline {
     agent {
