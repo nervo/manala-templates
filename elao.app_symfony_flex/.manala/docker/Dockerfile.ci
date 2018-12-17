@@ -1,0 +1,36 @@
+FROM debian:stretch-slim
+
+LABEL maintainer="Elao <contact@elao.com>"
+
+RUN \
+    #
+    # System
+    #
+    apt-get update \
+    && apt-get install -y --no-install-recommends \
+        apt-transport-https \
+        ca-certificates \
+        curl \
+        make \
+    # User
+    && adduser --disabled-password --gecos "" app \
+    #
+    # PHP
+    #
+    && echo "deb https://packages.sury.org/php/ stretch main" > /etc/apt/sources.list.d/php.list \
+    && curl -sSL https://packages.sury.org/php/apt.gpg --output /etc/apt/trusted.gpg.d/php.gpg \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+        php7.2-cli \
+        php7.2-intl \
+        php7.2-curl \
+        php7.2-mbstring \
+        php7.2-xml \
+        php7.2-mysql \
+        php7.2-zip \
+    #
+    # Composer
+    #
+    && curl -sSL https://getcomposer.org/installer | php -- --install-dir /usr/local/bin --filename composer
+
+USER app
