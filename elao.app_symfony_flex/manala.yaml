@@ -1,0 +1,5 @@
+manala:
+  description: Elao - App Symfony Flex
+  sync:
+    - .manala
+    - README.md .manala/README.md
