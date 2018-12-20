@@ -1,0 +1,49 @@
+all:
+  # Global vars
+  vars:
+
+    # Dir
+    manala_deploy_dir: /srv/app
+
+    # Releases
+    manala_deploy_releases: 5
+
+    # Strategy
+    manala_deploy_strategy: git
+    manala_deploy_strategy_git_repo: git@github.com:vendor/app.git
+    manala_deploy_strategy_git_version: master
+
+    # Copied
+    manala_deploy_copied:
+      - vendor
+
+    # Shared
+    manala_deploy_shared_files:
+      - app/config/parameters.yml
+    manala_deploy_shared_dirs:
+      - var/log
+
+    # Writable
+    #manala_deploy_writable_dirs_default:
+    #  mode:   ug=rwx,o=rx
+    #  follow: true
+    #manala_deploy_writable_dirs:
+    #  - var/cache
+    #  - var/log
+
+  hosts:
+    production:
+      # Ansible
+      ansible_connection: local
+
+      # Tasks
+      manala_deploy_tasks:
+        - make: warmup@production
+
+    staging:
+      # Ansible
+      ansible_connection: local
+
+      # Tasks
+      manala_deploy_tasks:
+        - make: warmup@staging
