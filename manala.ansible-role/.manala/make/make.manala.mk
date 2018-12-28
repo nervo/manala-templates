@@ -1,12 +1,6 @@
 .DEFAULT_GOAL := help
 .PHONY: help manala
 
-#############################
-# GNU Make Standard Library #
-#############################
-
-include $(MANALA_MAKE_DIR)/gmsl/gmsl
-
 ###############
 # Directories #
 ###############
@@ -237,7 +231,7 @@ endef
 #   $(call if_eq,1,2,Yes,No) = No
 
 define if_eq
-$(if $(call seq,$(1),$(2)),$(3),$(4))
+$(if $(subst x$(1),,x$(2))$(subst x$(2),,x$(1)),$(4),$(3))
 endef
 
 # If number greater than or equal
