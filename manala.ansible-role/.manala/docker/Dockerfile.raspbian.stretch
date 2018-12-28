@@ -57,18 +57,26 @@ RUN addgroup --gid ${GROUP_ID} ${GROUP_DEFAULT} && \
 # Custom #
 ##########
 
-# Pip packages
-ENV JINJA2_VERSION="2.10" \
-    ANSIBLE_VERSION="2.7.5" \
-    ANSIBLE_LINT_VERSION="3.5.1"
-RUN DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install \
-      python3.5 python3.5-dev libssl-dev libffi-dev python3-pip && \
-    pip3 install setuptools && \
-    pip3 --no-cache-dir --disable-pip-version-check install \
-      Jinja2==2.10 \
-      ansible==2.7.5 \
-      ansible-lint==3.5.1 && \
-    DEBIAN_FRONTEND=noninteractive apt-get -y purge python-dev libssl-dev
+RUN \
+    ###########
+    # Ansible #
+    ###########
+    \
+    echo "deb http://ppa.launchpad.net/ansible/ansible/ubuntu trusty main" > /etc/apt/sources.list.d/ansible.list \
+    && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 93C4A3FD7BB9C367 \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ansible \
+    \
+    ################
+    # Ansible Lint #
+    ################
+    \
+    && apt-get install -y --no-install-recommends \
+        python-pip \
+    && pip --no-cache-dir --disable-pip-version-check install \
+        ansible-lint \
+    && apt-get -y purge python-pip
 
 # Ansible hosts
 COPY ansible/hosts.raspbian.stretch /etc/ansible/hosts

@@ -74,7 +74,8 @@ RUN \
     && apt-get install -y --no-install-recommends \
         python-pip \
     && pip --no-cache-dir --disable-pip-version-check install \
-        ansible-lint
+        ansible-lint \
+    && apt-get -y purge python-pip
 
 # Ansible hosts
 COPY ansible/hosts.debian.stretch /etc/ansible/hosts
