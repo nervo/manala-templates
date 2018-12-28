@@ -5,3 +5,4 @@ manala:
     - .gitignore
     - .travis.yml
     - tests/.gitignore
+    - meta

@@ -1,0 +1,45 @@
+---
+
+dependencies: []
+
+galaxy_info:
+
+  author:              Manala
+  company:             Manala
+  description:         {{ .role.description }}
+  license:             MIT
+  min_ansible_version: 2.4.0
+  issue_tracker_url:   https://github.com/manala/ansible-roles/issues
+  platforms:
+{{- $debian := list -}}
+{{- $centos := list -}}
+{{- $ubuntu := list -}}
+{{- range .role.distributions -}}
+  {{- $distribution := . | splitList "." -}}
+  {{- if eq (index $distribution 0) "debian"}}{{ $debian = append $debian (index $distribution 1) }}{{ end -}}
+  {{- if eq (index $distribution 0) "centos"}}{{ $centos = append $centos (index $distribution 1) }}{{ end -}}
+  {{- if eq (index $distribution 0) "ubuntu"}}{{ $ubuntu = append $ubuntu (index $distribution 1) }}{{ end -}}
+{{- end -}}
+{{ if $debian }}
+    - name: Debian
+      versions:
+  {{- range $debian }}
+        - {{ . }}
+  {{- end -}}
+{{ end -}}
+{{ if $centos }}
+    - name: EL
+      versions:
+  {{- range $centos }}
+        - {{ . }}
+  {{- end -}}
+{{ end -}}
+{{ if $ubuntu }}
+    - name: Ubuntu
+      versions:
+  {{- range $ubuntu }}
+        - {{ . }}
+  {{- end -}}
+{{ end }}
+  galaxy_tags:
+    {{- .role.tags | toYaml | nindent 4 -}}
