@@ -1,0 +1,9 @@
+all:
+  hosts:
+{{ range $env, $vars := .deploy }}
+    {{ $env }}:
+      # Ansible
+      ansible_connection: local
+      # Environment
+      {{- $vars | toYaml | nindent 6 }}
+{{- end -}}

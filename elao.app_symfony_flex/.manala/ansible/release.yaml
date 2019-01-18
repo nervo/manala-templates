@@ -1,0 +1,124 @@
+---
+
+- hosts: all
+  gather_facts: false
+  tasks:
+
+    - name: Cleanup
+      file:
+          path: "{{ release_dir }}"
+          state: absent
+
+    - name: Git > Get original commit hash
+      command: "git rev-parse HEAD"
+      args:
+          chdir: "/srv/"
+      register: __original_commit_hash
+
+    - name: Git > Get release name
+      command: "date '+%Y%m%d%H%M%S'"
+      args:
+          chdir: "/srv/"
+      register: __release_name
+
+    - name: Git > Export repository
+      command: git checkout-index --force --all --prefix={{ release_dir }}/
+      args:
+          chdir: "/srv/"
+
+    - set_fact:
+          __release_commit_message: |
+              {{ __release_name.stdout }}
+              Original commit: {{ original_commit_prefix }}{{ __original_commit_hash.stdout }}
+
+#    - set_fact:
+#      __release_tag_suffix: "{{ (release_version == 'production')|ternary(None, '-' ~ release_version) }}"
+#
+#    - set_fact:
+#      __release_tag: "{{ __release_name|ternary(__release_name|trim|lower|replace(' ', '_') ~ __release_tag_suffix, None) }}"
+
+    # Build app
+    - name: Install
+      command: "make install@production"
+      args:
+          chdir: "{{ release_dir }}"
+
+    - name: Build
+      command: "make build@production"
+      args:
+          chdir: "{{ release_dir }}"
+
+    # Git
+    - name: Git init
+      command: git init
+      args:
+          chdir: "{{ release_dir }}"
+
+    - name: Create local branch "{{ release_version }}"
+      command: git checkout -b {{ release_version }}
+      args:
+          chdir: "{{ release_dir }}"
+
+    - name: Git - Set origin "{{ release_repo }}"
+      command: git remote add origin {{ release_repo }}
+      args:
+          chdir: "{{ release_dir }}"
+
+    - name: Git - Fetch
+      command: git fetch
+      args:
+          chdir: "{{ release_dir }}"
+
+    - name: Git - Check ref
+      command: git show-ref -q origin/{{ release_version }}
+      args:
+          chdir: "{{ release_dir }}"
+      register: __release_ref_check
+      failed_when: __release_ref_check.rc not in (0,1)
+
+    - name: Git - Update ref
+      command: git update-ref HEAD origin/{{ release_version }}
+      when: __release_ref_check.rc == 0
+      args:
+          chdir: "{{ release_dir }}"
+
+    - name: Git - Remove unnecessary files
+      file:
+          path: "{{ release_dir }}/{{ item }}"
+          state: absent
+      with_items: "{{ release_removed }}"
+
+    - name: Git - Add
+      command: git add --all
+      args:
+          chdir: "{{ release_dir }}"
+
+    - name: Git - Add explictly release files
+      command: git add --force {{ release_add|join(" ") }}
+      args:
+          chdir: "{{ release_dir }}"
+
+    - name: Git - Commit
+      command: git commit -m "{{ __release_commit_message }}"
+      args:
+          chdir: "{{ release_dir }}"
+
+#    - name: Git - Tag
+#      command: git tag {{ __release_tag }}
+#      args:
+#          chdir: "{{ release_dir }}"
+
+    - name: Git - Push
+      command: git push --set-upstream origin {{ release_version }}
+      args:
+          chdir: "{{ release_dir }}"
+
+#    - name: Git - Push tags
+#      command: git push --tags
+#      args:
+#          chdir: "{{ release_dir }}"
+
+    - name: Git - Push origin
+      command: git push origin HEAD
+      args:
+          chdir: "{{ release_dir }}"

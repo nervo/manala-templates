@@ -1,0 +1,6 @@
+---
+
+- apt:
+    name:
+      - ssh
+    install_recommends: false
