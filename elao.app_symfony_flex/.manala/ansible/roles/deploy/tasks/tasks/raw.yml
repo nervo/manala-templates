@@ -1,0 +1,7 @@
+---
+
+- name: tasks/raw
+  block:
+
+    - name: tasks/raw > "{{ item.options }}"
+      raw: "{{ item.options }}"

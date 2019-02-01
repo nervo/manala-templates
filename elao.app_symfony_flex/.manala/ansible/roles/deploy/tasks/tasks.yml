@@ -1,0 +1,7 @@
+---
+
+# Tasks
+- name: tasks
+  include_tasks: tasks/{{ item.task }}.yml
+  with_deploy_tasks: "{{ __deploy_tasks }}"
+  when: item.when
