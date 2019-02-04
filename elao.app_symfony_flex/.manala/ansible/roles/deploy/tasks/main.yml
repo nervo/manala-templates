@@ -76,4 +76,4 @@
 # Post tasks
 - import_tasks: tasks.yml
   vars:
-    __deploy_tasks: "{{ post_tasks }}"
+    __deploy_tasks: "{{ deploy_post_tasks }}"
