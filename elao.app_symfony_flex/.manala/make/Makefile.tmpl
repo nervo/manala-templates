@@ -1,3 +1,9 @@
+include \
+  .manala/make/make.color.mk \
+  .manala/make/make.help.mk
+
+HELP += $(call help_section,Project)
+
 include .manala/make/make.docker.mk
 include .manala/make/make.release.mk
 include .manala/make/make.deploy.mk
