@@ -6,4 +6,4 @@ all:
       ansible_connection: local
       # Environment
       {{- $vars | toYaml | nindent 6 }}
-{{- end -}}
+{{- end }}
