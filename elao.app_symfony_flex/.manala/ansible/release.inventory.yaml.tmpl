@@ -1,9 +1,9 @@
 all:
   hosts:
-{{ range $env, $vars := .release }}
+{{ range $env, $options := .release }}
     {{ $env }}:
       # Ansible
       ansible_connection: local
       # Environment
-      {{- $vars | toYaml | nindent 6 }}
+      {{- $options.vars | toYaml | nindent 6 }}
 {{- end }}

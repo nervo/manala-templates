@@ -2,9 +2,50 @@ include \
   .manala/make/make.color.mk \
   .manala/make/make.help.mk
 
-HELP += $(call help_section,Project)
+include .manala/make/make.git.mk
+
+##########
+# Docker #
+##########
 
 include .manala/make/make.docker.mk
+
+HELP += $(call help_section,Docker)
+HELP += $(call help,docker.sh, Run shell)
+
+docker.sh:
+	$(call docker_sh)
+
+###########
+# Release #
+###########
+
 include .manala/make/make.release.mk
+
+HELP += $(call help_section,Release)
+
+{{ range $env, $options := .release }}
+HELP += $(call help,release@{{ $env }},Release in {{ $env }})
+release@{{ $env }}:
+	$(call release,{{ $env }})
+{{ end -}}
+
+##########
+# Deploy #
+##########
+
 include .manala/make/make.deploy.mk
-include .manala/make/make.git.mk
+
+HELP += $(call help_section,Deploy)
+
+{{ range $env, $options := .deploy }}
+HELP += $(call help,deploy@{{ $env }},Deploy in {{ $env }})
+deploy@{{ $env }}:
+	$(call deploy,{{ $env }})
+{{ end -}}
+
+###########
+# Project #
+###########
+
+HELP += $(call help_section,Project)

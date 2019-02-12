@@ -1,5 +1,40 @@
 # Elao - App Symfony Flex
 
+## Release
+
+Here is an example of a production release configuration in `.manala.yaml`:
+
+```yaml
+release:
+  production:
+    original_commit_prefix: https://github.com/elao/wotol/commit/
+    release_dir: /srv/.manala/build/release
+    release_version: production
+    release_repo: git@git.elao.com:wotol/wotol-release.git
+    release_add:
+      - public/build/
+      - vendor
+    release_removed:
+      - ansible
+      - build
+      - doc
+      - node_modules
+      - tests
+      - .dockerignore
+      - .env.test
+      - .php_cs.dist
+      - Jenkinsfile
+      - .manala
+      - .manala.local.yaml
+      - .manala.yaml
+      - package.json
+      - phpunit.xml.dist
+      - README.md
+      - Vagrantfile
+      - webpack.config.js
+      - yarn.lock
+```
+
 ## Jenkins
 
 Resources:

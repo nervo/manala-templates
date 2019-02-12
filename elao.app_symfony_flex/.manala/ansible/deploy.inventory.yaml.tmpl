@@ -1,6 +1,6 @@
 all:
   children:
-{{ range $env, $vars := .deploy }}
+{{ range $env, $options := .deploy }}
     {{ $env }}:
-      {{- $vars | toYaml | nindent 6 }}
+      {{- $options | toYaml | nindent 6 }}
 {{- end -}}
