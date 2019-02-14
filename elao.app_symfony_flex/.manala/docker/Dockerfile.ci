@@ -12,10 +12,12 @@ RUN apt-get update \
         vim-tiny \
         gnupg2 dirmngr \
         openssh-client \
+        sudo \
         git
 
 # User
-RUN adduser --disabled-password --gecos "" app
+RUN adduser --disabled-password --gecos "" app \
+    && echo "app ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/app
 
 # Ssh
 RUN echo "\
@@ -24,7 +26,8 @@ Host * \n\
   HashKnownHosts        no\n\
   ForwardAgent          yes\n\
   UserKnownHostsFile    /dev/null\n\
-  LogLevel              ERROR\n" > /etc/ssh/ssh_config
+  LogLevel              ERROR\n\
+  AddKeysToAgent        yes\n" > /etc/ssh/ssh_config
 
 # Ansible
 RUN echo "deb http://ppa.launchpad.net/ansible/ansible/ubuntu trusty main" > /etc/apt/sources.list.d/ansible.list \
@@ -62,4 +65,4 @@ RUN echo "deb https://deb.nodesource.com/node_10.x stretch main" > /etc/apt/sour
 
 WORKDIR /srv
 
-#USER app
+USER app

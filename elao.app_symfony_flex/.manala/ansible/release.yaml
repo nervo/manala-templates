@@ -37,16 +37,12 @@
 #    - set_fact:
 #      __release_tag: "{{ __release_name|ternary(__release_name|trim|lower|replace(' ', '_') ~ __release_tag_suffix, None) }}"
 
-    # Build app
-    - name: Install
-      command: "make install@production"
+    # Commands
+    - name: Commands
+      command: "{{ item }}"
       args:
-          chdir: "{{ release_dir }}"
-
-    - name: Build
-      command: "make build@production"
-      args:
-          chdir: "{{ release_dir }}"
+        chdir: "{{ release_dir }}"
+      with_items: "{{ release_commands }}"
 
     # Git
     - name: Git init
