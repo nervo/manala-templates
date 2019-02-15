@@ -37,12 +37,12 @@
 #    - set_fact:
 #      __release_tag: "{{ __release_name|ternary(__release_name|trim|lower|replace(' ', '_') ~ __release_tag_suffix, None) }}"
 
-    # Commands
-    - name: Commands
-      command: "{{ item }}"
+    # Tasks
+    - name: Tasks
+      shell: "{{ item }}"
       args:
         chdir: "{{ release_dir }}"
-      with_items: "{{ release_commands }}"
+      with_items: "{{ release_tasks }}"
 
     # Git
     - name: Git init
