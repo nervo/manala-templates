@@ -37,8 +37,8 @@ sh.{{ . }}: .fail_if_host_not(local) build.{{ . }}
 		--rm \
 		--tty --interactive \
 		--privileged \
-		--volume $(PWD):/srv/role \
-		--volume $(PWD):/etc/ansible/roles/{{ $role.name }} \
+		--volume $(shell pwd -P):/srv/role \
+		--volume $(shell pwd -P):/etc/ansible/roles/{{ $role.name }} \
 		--workdir /srv/role \
 		--hostname {{ $role.name }}.{{ . }} \
 		--env USER_ID=$(MANALA_USER_ID) \
