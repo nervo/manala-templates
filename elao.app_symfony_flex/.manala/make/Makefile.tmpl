@@ -25,9 +25,11 @@ include .manala/make/make.release.mk
 HELP += $(call help_section,Release)
 
 {{ range $env, $options := .release }}
+{{ if ne ($env | substr 0 1) "_" }}
 HELP += $(call help,release@{{ $env }},Release in {{ $env }})
 release@{{ $env }}:
 	$(call release,{{ $env }})
+{{ end }}
 {{ end -}}
 
 ##########
@@ -39,9 +41,11 @@ include .manala/make/make.deploy.mk
 HELP += $(call help_section,Deploy)
 
 {{ range $env, $options := .deploy }}
+{{ if ne ($env | substr 0 1) "_" }}
 HELP += $(call help,deploy@{{ $env }},Deploy in {{ $env }})
 deploy@{{ $env }}:
 	$(call deploy,{{ $env }})
+{{ end }}
 {{ end -}}
 
 ###########
