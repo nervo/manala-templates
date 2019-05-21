@@ -82,15 +82,10 @@
       file:
           path: "{{ release_dir }}/{{ item }}"
           state: absent
-      with_items: "{{ release_removed }}"
+      with_items: "{{ release_removed|default([]) }}"
 
-    - name: Git - Add
-      command: git add --all
-      args:
-          chdir: "{{ release_dir }}"
-
-    - name: Git - Add explictly release files
-      command: git add --force {{ release_add|join(" ") }}
+    - name: Git - Add files to release
+      command: "{{ (release_add|length)|ternary('git add --force ' ~ release_add|join(' '), 'git add --all --force') }}"
       args:
           chdir: "{{ release_dir }}"
 
