@@ -11,7 +11,7 @@
 #
 # Example #1: list PHP files changed in the src and test folders
 #
-#   $(call git_diff, php, src test)
+#   $(call git_diff,php,src test)
 
 define git_diff
     $(shell .manala/scripts/ls_changed_files.sh --ext=.$(1) $(2))
