@@ -60,61 +60,61 @@ Here is an example of a production release configuration in `.manala.yaml`:
 
 ```yaml
 release:
-  production:
-    original_commit_prefix: https://github.com/elao/wotol/commit/
-    release_dir: /srv/.manala/build/release
-    release_version: production
-    release_repo: git@git.elao.com:wotol/wotol-release.git
-    # You can either explicitely list all the paths you want to include
-    release_add:
-      - bin
-      - composer.json # Required by src/Kernel.php to determine project root dir
-      - composer.lock # Required by composer on post-install (warmup)
-      - config
-      - public
-      - src
-      - templates
-      - translations
-      - var
-      - vendor
-      - Makefile
-    # Or you can include all by default and only list the paths you want to exclude
-    # release_add: []
-    # release_removed:
-    #   - ansible
-    #   - build
-    #   - doc
-    #   - node_modules
-    #   - tests
-    #   - .dockerignore
-    #   - .env.test
-    #   - .php_cs.dist
-    #   - Jenkinsfile
-    #   - .manala
-    #   - .manala.local.yaml
-    #   - .manala.yaml
-    #   - package.json
-    #   - phpunit.xml.dist
-    #   - README.md
-    #   - Vagrantfile
-    #   - webpack.config.js
-    #   - yarn.lock
+  _all:
+    vars: &release_all_vars
+      original_commit_prefix: https://github.com/<vendor>/<app>/commit/
+      release_dir: /srv/.manala/build/release
+      release_repo: git@git.elao.com:<vendor>/<app>-release.git
 
-    # Or you can both add paths and exclude some other ones
-    # release_add:
-    #   - bin
-    #   - composer.json
-    #   - composer.lock
-    #   - config
-    #   - public
-    #   - src
-    #   - templates
-    #   - translations
-    #   - var
-    #   - vendor
-    #   - Makefile
-    # release_remove:
-    #   - var/tmp
+      # You can either explicitely list all the paths you want to include
+      release_add:
+        - bin
+        - composer.json # Required by src/Kernel.php to determine project root dir
+        - composer.lock # Required by composer on post-install (warmup)
+        - config
+        - public
+        - src
+        - templates
+        - translations
+        - var
+        - vendor
+        - Makefile
+
+      # Or you can include all by default and only list the paths you want to exclude
+      # release_removed:
+      #   - ansible
+      #   - build
+      #   - doc
+      #   - node_modules
+      #   - tests
+      #   - .dockerignore
+      #   - .env.test
+      #   - .php_cs.dist
+      #   - Jenkinsfile
+      #   - .manala
+      #   - .manala.local.yaml
+      #   - .manala.yaml
+      #   - package.json
+      #   - phpunit.xml.dist
+      #   - README.md
+      #   - Vagrantfile
+      #   - webpack.config.js
+      #   - yarn.lock
+      
+  staging:
+    vars:
+      << : *release_all_vars
+      release_tasks:
+        - make install@staging
+        - make build@staging
+      release_version: staging
+  production:
+    vars:
+      << : *release_all_vars
+      release_tasks:
+        - make install@production
+        - make build@production
+      release_version: production
 
 ```
 
