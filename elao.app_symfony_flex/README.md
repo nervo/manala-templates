@@ -172,7 +172,7 @@ cs:
 ifeq ($(strip $(call git_diff,php,src tests)),)
     echo "You have made no change in PHP files"
 else
-    vendor/bin/php-cs-fixer fix --dry-run --diff $(call git_diff,php,src tests)
+    vendor/bin/php-cs-fixer fix --dry-run --diff  --config=.php_cs.dist --path-mode=intersection $(call git_diff,php,src tests)
 endif
 
 ## Show code style errors in every PHP file
