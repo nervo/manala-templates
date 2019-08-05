@@ -54,6 +54,16 @@ Deploy:
 Project:
 ```
 
+## System
+
+Here is an example of a system configuration in `.manala.yaml`:
+
+```yaml
+system:
+  php:
+    version: 7.3
+```
+
 ## Release
 
 Here is an example of a production release configuration in `.manala.yaml`:
