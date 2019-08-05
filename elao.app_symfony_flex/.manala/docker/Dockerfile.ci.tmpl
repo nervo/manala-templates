@@ -36,20 +36,22 @@ RUN echo "deb http://ppa.launchpad.net/ansible/ansible/ubuntu trusty main" > /et
     && apt-get install -y --no-install-recommends \
         ansible
 
+{{ if .system.php -}}
 # Php
 RUN echo "deb https://packages.sury.org/php/ stretch main" > /etc/apt/sources.list.d/php.list \
     && curl -sSL https://packages.sury.org/php/apt.gpg --output /etc/apt/trusted.gpg.d/php.gpg \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
-        php7.2-cli \
-        php7.2-intl \
-        php7.2-curl \
-        php7.2-mbstring \
-        php7.2-xml \
-        php7.2-mysql \
-        php7.2-zip \
+        php{{ .system.php.version }}-cli \
+        php{{ .system.php.version }}-intl \
+        php{{ .system.php.version }}-curl \
+        php{{ .system.php.version }}-mbstring \
+        php{{ .system.php.version }}-xml \
+        php{{ .system.php.version }}-mysql \
+        php{{ .system.php.version }}-zip \
     # Composer
     && curl -sSL https://getcomposer.org/installer | php -- --install-dir /usr/local/bin --filename composer
+{{- end }}
 
 # Node
 RUN echo "deb https://deb.nodesource.com/node_10.x stretch main" > /etc/apt/sources.list.d/node.list \
