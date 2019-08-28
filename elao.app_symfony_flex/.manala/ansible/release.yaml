@@ -41,34 +41,34 @@
     - name: Tasks
       shell: "{{ item }}"
       args:
-        chdir: "{{ release_dir }}"
+        chdir: "{{ [release_dir, release_target_dir]|select('defined')|list|join('/') }}"
       with_items: "{{ release_tasks|default([]) }}"
 
     # Git
     - name: Git init
       command: git init
       args:
-          chdir: "{{ release_dir }}"
+          chdir: "{{ [release_dir, release_target_dir]|select('defined')|list|join('/') }}"
 
     - name: Create local branch "{{ release_version }}"
       command: git checkout -b {{ release_version }}
       args:
-          chdir: "{{ release_dir }}"
+          chdir: "{{ [release_dir, release_target_dir]|select('defined')|list|join('/') }}"
 
     - name: Git - Set origin "{{ release_repo }}"
       command: git remote add origin {{ release_repo }}
       args:
-          chdir: "{{ release_dir }}"
+          chdir: "{{ [release_dir, release_target_dir]|select('defined')|list|join('/') }}"
 
     - name: Git - Fetch
       command: git fetch
       args:
-          chdir: "{{ release_dir }}"
+          chdir: "{{ [release_dir, release_target_dir]|select('defined')|list|join('/') }}"
 
     - name: Git - Check ref
       command: git show-ref -q origin/{{ release_version }}
       args:
-          chdir: "{{ release_dir }}"
+          chdir: "{{ [release_dir, release_target_dir]|select('defined')|list|join('/') }}"
       register: __release_ref_check
       failed_when: __release_ref_check.rc not in (0,1)
 
@@ -76,40 +76,40 @@
       command: git update-ref HEAD origin/{{ release_version }}
       when: __release_ref_check.rc == 0
       args:
-          chdir: "{{ release_dir }}"
+          chdir: "{{ [release_dir, release_target_dir]|select('defined')|list|join('/') }}"
 
     - name: Git - Remove unnecessary files
       file:
-          path: "{{ release_dir }}/{{ item }}"
+          path: "{{ [release_dir, release_target_dir, item]|select('defined')|list|join('/') }}"
           state: absent
       with_items: "{{ release_removed|default([]) }}"
 
     - name: Git - Add files to release
       command: "{{ (release_add|default([])|length)|ternary('git add --force ' ~ release_add|default([])|join(' '), 'git add --all --force') }}"
       args:
-          chdir: "{{ release_dir }}"
+          chdir: "{{ [release_dir, release_target_dir]|select('defined')|list|join('/') }}"
 
     - name: Git - Commit
       command: git commit -m "{{ __release_commit_message }}"
       args:
-          chdir: "{{ release_dir }}"
+          chdir: "{{ [release_dir, release_target_dir]|select('defined')|list|join('/') }}"
 
 #    - name: Git - Tag
 #      command: git tag {{ __release_tag }}
 #      args:
-#          chdir: "{{ release_dir }}"
+#          chdir: "{{ [release_dir, release_target_dir]|select('defined')|list|join('/') }}"
 
     - name: Git - Push
       command: git push --set-upstream origin {{ release_version }}
       args:
-          chdir: "{{ release_dir }}"
+          chdir: "{{ [release_dir, release_target_dir]|select('defined')|list|join('/') }}"
 
 #    - name: Git - Push tags
 #      command: git push --tags
 #      args:
-#          chdir: "{{ release_dir }}"
+#          chdir: "{{ [release_dir, release_target_dir]|select('defined')|list|join('/') }}"
 
     - name: Git - Push origin
       command: git push origin HEAD
       args:
-          chdir: "{{ release_dir }}"
+          chdir: "{{ [release_dir, release_target_dir]|select('defined')|list|join('/') }}"
