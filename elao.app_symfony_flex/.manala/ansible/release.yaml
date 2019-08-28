@@ -42,7 +42,7 @@
       shell: "{{ item }}"
       args:
         chdir: "{{ release_dir }}"
-      with_items: "{{ release_tasks }}"
+      with_items: "{{ release_tasks|default([]) }}"
 
     # Git
     - name: Git init
@@ -85,7 +85,7 @@
       with_items: "{{ release_removed|default([]) }}"
 
     - name: Git - Add files to release
-      command: "{{ (release_add|length)|ternary('git add --force ' ~ release_add|join(' '), 'git add --all --force') }}"
+      command: "{{ (release_add|default([])|length)|ternary('git add --force ' ~ release_add|default([])|join(' '), 'git add --all --force') }}"
       args:
           chdir: "{{ release_dir }}"
 
