@@ -13,9 +13,11 @@
 #   $(call release,production)
 
 define release
-        docker build \
+        ID=.manala/docker/.cache/release.$(1).id \
+        && mkdir -p `dirname $${ID}` \
+        && docker build \
                 --pull \
-                --iidfile .manala/docker/.cache/release.$(1).id \
+                --iidfile $${ID} \
                 --file .manala/docker/Dockerfile.ci \
                 .manala/docker \
         && docker run \
@@ -25,6 +27,6 @@ define release
                 --mount type=bind,consistency=delegated,source=$(shell pwd -P),target=/srv \
                 --mount type=bind,consistency=cached,source=$(HOME)/.ssh/id_rsa,target=/home/app/.ssh/id_rsa \
                 --mount type=bind,consistency=cached,source=$(HOME)/.gitconfig,target=/home/app/.gitconfig \
-                `cat .manala/docker/.cache/release.$(1).id` \
+                `cat $${ID}` \
                 ssh-agent ansible-playbook .manala/ansible/release.yaml --inventory .manala/ansible/release.inventory.yaml --limit $(1)
 endef
