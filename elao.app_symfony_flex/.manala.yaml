@@ -1,5 +1,8 @@
 manala:
   description: Elao - App Symfony Flex
   sync:
-    - .manala
+    - .manala/ansible .manala/ansible
+    - .manala/docker .manala/docker
+    - .manala/make .manala/make
+    - .manala/.gitignore .manala/.gitignore
     - README.md .manala/README.md

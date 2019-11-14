@@ -31,18 +31,22 @@
   with_items: "{{ deploy_copied }}"
 
 - name: copied > Copy
-  command: "cp -R {{ deploy_helper.previous_release_path ~ '/' ~ item.1 ~ (__deploy_copied_stats_output.results[item.0].stat.isdir|ternary('/', '')) }} {{ deploy_helper.new_release_path ~ '/' ~ item.1 }}"
+  shell: >
+    cp -R {{ deploy_helper.previous_release_path ~ '/' ~ item.1 ~ (__deploy_copied_stats_output.results[item.0].stat.isdir|ternary('/', '')) }}
+    {{ deploy_helper.new_release_path ~ '/' ~ item.1 }}
   delegate_to: "{{ inventory_hostname }}"
   with_indexed_items: "{{ deploy_copied }}"
   when: __deploy_copied_stats_output.results[item.0].stat.exists
+  tags: log_failed
 
 # Writable - Dirs
 - import_tasks: writable/dirs.yml
 
 # Tasks
-- import_tasks: tasks.yml
-  vars:
-    __deploy_tasks: "{{ deploy_tasks }}"
+- name: tasks
+  include_tasks: task/{{ item.task }}.yml
+  loop: "{{ query('deploy_tasks', deploy_tasks) }}"
+  when: item.when
 
 # Removed
 - name: removed > Files
@@ -74,6 +78,7 @@
   ignore_errors: true
 
 # Post tasks
-- import_tasks: tasks.yml
-  vars:
-    __deploy_tasks: "{{ deploy_post_tasks }}"
+- name: post tasks
+  include_tasks: task/{{ item.task }}.yml
+  loop: "{{ query('deploy_tasks', deploy_post_tasks) }}"
+  when: item.when

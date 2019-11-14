@@ -2,8 +2,9 @@
 
 * [Overview](#overview)
 * [Quick start](#quick-start)
-* [Release](#release)
-* [Deploy](#deploy)
+* [System](#system)
+* [Releases](#releases)
+* [Makefile](#makefile)
 * [Git tools](#git-tools)
 * [Jenkins](#jenkins)
 
@@ -30,7 +31,7 @@ Edit the `Makefile` at the root directory of your project and add the following 
 -include .manala/make/Makefile
 ```
 
-Then update the `.manala.yaml` file (see [the release example](#release) below) and then run the `manala up` command:
+Then update the `.manala.yaml` file (see [the releases example](#releases) below) and then run the `manala up` command:
 
 ```
     $ manala up
@@ -47,11 +48,9 @@ Help:
   help This help
 
 Docker:
-  docker.sh  Run shell
-Release:
-  release@production Release in production
-Deploy:
-Project:
+  docker Run docker container
+
+App:
 ```
 
 ## System
@@ -62,110 +61,147 @@ Here is an example of a system configuration in `.manala.yaml`:
 system:
   php:
     version: 7.3
+  nodejs:
+    version: 12
+  ssh:
+    config: |
+      Host *.elao.run
+        User         app
+        ForwardAgent yes
+      Host *.elao.local
+        User         app
+        ForwardAgent yes
+        ProxyJump    gateway@bastion.elao.com
 ```
 
-## Release
+## Releases
 
-Here is an example of a production release configuration in `.manala.yaml`:
+Here is an example of a production/staging release configuration in `.manala.yaml`:
 
 ```yaml
-release:
-  _all:
-    vars: &release_all_vars
-      original_commit_prefix: https://github.com/<vendor>/<app>/commit/
-      release_dir: /srv/.manala/build/release
-      release_repo: git@git.elao.com:<vendor>/<app>-release.git
+releases:
 
-      # You can either explicitely list all the paths you want to include
-      release_add:
-        - bin
-        - composer.json # Required by src/Kernel.php to determine project root dir
-        - composer.lock # Required by composer on post-install (warmup)
-        - config
-        - public
-        - src
-        - templates
-        - translations
-        - var
-        - vendor
-        - Makefile
+  - &release
+    #app: api # Optionnal
+    #app_dir: api # Optionnal, <app> by default
+    env: production
+    #env_branch: api/production # Optionnal, <app>/<env> by default
+    repo: git@git.elao.com:<vendor>/<app>-release.git
+    # Release
+    release_tasks:
+      - shell: make install@production
+      - shell: make build@production
+    # You can either explicitly list all the paths you want to include
+    release_add:
+      - bin
+      - config
+      - public
+      - src
+      - templates
+      - translations
+      - vendor
+      - composer.* # Composer.json required by src/Kernel.php to determine project root dir
+                   # Composer.lock required by composer on post-install (warmup)
+      - Makefile
 
-      # Or you can include all by default and only list the paths you want to exclude
-      # release_removed:
-      #   - ansible
-      #   - build
-      #   - doc
-      #   - node_modules
-      #   - tests
-      #   - .dockerignore
-      #   - .env.test
-      #   - .php_cs.dist
-      #   - Jenkinsfile
-      #   - .manala
-      #   - .manala.local.yaml
-      #   - .manala.yaml
-      #   - package.json
-      #   - phpunit.xml.dist
-      #   - README.md
-      #   - Vagrantfile
-      #   - webpack.config.js
-      #   - yarn.lock
-      
-  staging:
-    vars:
-      << : *release_all_vars
-      release_tasks:
-        - make install@staging
-        - make build@staging
-      release_version: staging
-  production:
-    vars:
-      << : *release_all_vars
-      release_tasks:
-        - make install@production
-        - make build@production
-      release_version: production
+    # Or you can include all by default and only list the paths you want to exclude
+    # release_removed:
+    #   - ansible
+    #   - build
+    #   - doc
+    #   - node_modules
+    #   - tests
+    #   - .env.test
+    #   - .php_cs.dist
+    #   - .manala*
+    #   - package.json
+    #   - phpunit.xml.dist
+    #   - README.md
+    #   - Vagrantfile
+    #   - webpack.config.js
+    #   - yarn.lock
 
+    # Deploy
+    deploy_hosts:
+      - ssh_host: foo-01.bar.elao.local
+        #master: true # Any custom variable are welcomed
+      - ssh_host: foo-02.bar.elao.local
+    deploy_dir: /srv/app
+    deploy_shared_files:
+      - config/parameters.yml
+    deploy_shared_dirs:
+      - var/log
+    deploy_tasks:
+      - shell: make warmup@production
+      #- shell: make migration@production
+      #  when: master | default # Conditions on custom host variables (jinja2 format)
+    deploy_post_tasks:
+      - shell: sudo systemctl reload php7.3-fpm
+
+  - << : *release
+    env: staging
+    tasks:
+      - shell: make install@staging
+      - shell: make build@staging
+    # Deploy
+    deploy_hosts:
+      - ssh_host: foo.bar.elao.ninja.local
+    deploy_tasks:
+      - shell: make warmup@staging
 ```
 
-## Deploy
+## Makefile
 
-Here is an example of a deploy configuration in `.manala.yaml`:
+Makefile targets that are supposed to be runned via docker must be prefixed.
 
-```yaml
-deploy:
-  _all:
-    vars: &deploy_all_vars
-      deploy_dir: /srv/app
-      deploy_releases: 4
-      deploy_strategy: git
-      deploy_strategy_git_repo: git@git.elao.com:<vendor>/<app>-release.git
-      deploy_shared_files:
-        - config/parameters.yaml
-      deploy_shared_dirs:
-        - config/jwt
-        - public/uploads
-        - var/company-assets
-        - var/log
-        - var/files
-  staging:
-    hosts:
-      staging-1:
-        ansible_host: <vendor>.<app>.elao.ninja
-    vars:
-      << : *deploy_all_vars
-      deploy_strategy_git_version: staging
-      deploy_tasks:
-        - make: warmup@staging
-  production:
-    hosts:
-      production-1:
-        ansible_host: <vendor>.<app>.elao.run
-    vars:
-      << : *deploy_all_vars
-      deploy_strategy_git_version: production
-      deploy_tasks:
-        - make: warmup@production
+```
+foo: SHELL := $(or $(DOCKER_SHELL),$(SHELL))
+foo:
+	# Do something really foo...
+```
+
+Ssh
+```
+#######
+# Ssh #
+#######
+
+## Ssh to staging server
+ssh@staging: SHELL := $(or $(DOCKER_SHELL),$(SHELL))
+ssh@staging:
+	ssh app@foo.staging.elao.run
+
+# Single host...
+
+ssh@production: SHELL := $(or $(DOCKER_SHELL),$(SHELL))
+ssh@production:
+	...
+
+# Multi host...
+
+ssh@production-01: SHELL := $(or $(DOCKER_SHELL),$(SHELL))
+ssh@production-01:
+	...
+```
+
+Sync
+```
+sync@staging: SHELL := $(or $(DOCKER_SHELL),$(SHELL))
+sync@staging:
+	mkdir --parents var
+	rsync --archive --compress --verbose --delete-after \
+		app@foo.staging.elao.run:/srv/app/current/var/files/ \
+		var/files/
+
+# Multi targets...
+sync-uploads@staging: SHELL := $(or $(DOCKER_SHELL),$(SHELL))
+sync-uploads@staging:
+  ...
+
+# Multi apps...
+sync.api-uploads@staging: SHELL := $(or $(DOCKER_SHELL),$(SHELL))
+sync.api-uploads@staging:
+  ...
 ```
 
 ## Git tools
@@ -200,7 +236,7 @@ Resources:
 pipeline {
     agent {
         dockerfile {
-            filename '.manala/docker/Dockerfile.ci'
+            filename '.manala/docker/Dockerfile'
         }
     }
     environment {

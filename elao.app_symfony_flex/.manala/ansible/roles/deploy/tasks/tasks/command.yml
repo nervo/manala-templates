@@ -1,9 +1,0 @@
----
-
-- name: tasks/command
-  block:
-
-    - name: tasks/command > "{{ item.options }}" in "{{ item.dir }}"
-      command: "{{ item.options }}"
-      args:
-        chdir: "{{ item.dir }}"

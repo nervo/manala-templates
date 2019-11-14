@@ -1,0 +1,10 @@
+Host *
+  StrictHostKeyChecking no
+  HashKnownHosts        no
+  UserKnownHostsFile    /dev/null
+  LogLevel              ERROR
+  AddKeysToAgent        yes
+
+{{ if .system.ssh.config -}}
+{{ .system.ssh.config }}
+{{- end -}}

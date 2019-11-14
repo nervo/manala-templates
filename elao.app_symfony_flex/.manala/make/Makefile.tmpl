@@ -1,8 +1,8 @@
 include \
   .manala/make/make.color.mk \
-  .manala/make/make.help.mk
-
-include .manala/make/make.git.mk
+  .manala/make/make.help.mk \
+  .manala/make/make.git.mk \
+  .manala/make/make.semver.mk
 
 ##########
 # Docker #
@@ -10,46 +10,60 @@ include .manala/make/make.git.mk
 
 include .manala/make/make.docker.mk
 
+ifneq ($(container),docker)
 HELP += $(call help_section,Docker)
-HELP += $(call help,docker.sh, Run shell)
 
-docker.sh:
-	$(call docker_sh)
+HELP += $(call help,docker,Run docker container)
+docker:
+	$(call docker_run)
 
-###########
-# Release #
-###########
+HELP += \n
+endif
 
-include .manala/make/make.release.mk
+{{ define "release_target" -}}
+  {{ if .app }}.{{ .app }}{{ end }}@{{ .env }}
+{{- end -}}
 
-HELP += $(call help_section,Release)
+{{- define "release_help" -}}
+  {{ if .app }}{{ .app }} {{ end }}in {{ .env }}
+{{- end -}}
 
-{{ range $env, $options := .release }}
-{{ if ne ($env | substr 0 1) "_" }}
-HELP += $(call help,release@{{ $env }},Release in {{ $env }})
-release@{{ $env }}:
-	$(call release,{{ $env }})
-{{ end }}
+{{- define "release_group" -}}
+  {{ if .app }}{{ .app }}_{{ end }}{{ .env }}
+{{- end -}}
+
+{{ if .releases -}}
+############
+# Releases #
+############
+
+HELP += $(call help_section,Releases)
+
+{{ range $release := .releases -}}
+HELP += $(call help,release{{ template "release_target" $release }},Release {{ template "release_help" $release }})
+release{{ template "release_target" $release }}: SHELL := $(or $(DOCKER_SHELL),$(SHELL))
+release{{ template "release_target" $release }}:
+		ansible-playbook .manala/ansible/release.yaml \
+			--inventory .manala/ansible/release.inventory.yaml \
+			--limit {{ template "release_group" $release }}
+
+{{ if $release.deploy_hosts -}}
+HELP += $(call help,deploy{{ template "release_target" $release }},Deploy {{ template "release_help" $release }})
+deploy{{ template "release_target" $release }}: SHELL := $(or $(DOCKER_SHELL),$(SHELL))
+deploy{{ template "release_target" $release }}:
+	ansible-playbook .manala/ansible/deploy.yaml \
+		--inventory .manala/ansible/deploy.inventory.yaml \
+		--limit {{ template "release_group" $release }}
+
 {{ end -}}
 
-##########
-# Deploy #
-##########
-
-include .manala/make/make.deploy.mk
-
-HELP += $(call help_section,Deploy)
-
-{{ range $env, $options := .deploy }}
-{{ if ne ($env | substr 0 1) "_" }}
-HELP += $(call help,deploy@{{ $env }},Deploy in {{ $env }})
-deploy@{{ $env }}:
-	$(call deploy,{{ $env }})
-{{ end }}
 {{ end -}}
 
-###########
-# Project #
-###########
+HELP += \n
 
-HELP += $(call help_section,Project)
+{{ end -}}
+#######
+# App #
+#######
+
+HELP += $(call help_section,App)

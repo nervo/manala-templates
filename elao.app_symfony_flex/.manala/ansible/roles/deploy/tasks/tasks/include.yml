@@ -1,7 +1,0 @@
----
-
-- name: tasks/include
-  block:
-
-    - name: tasks/include > "{{ item.options }}"
-      include_tasks: "{{ item.options }}"

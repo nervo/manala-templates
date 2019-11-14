@@ -14,5 +14,17 @@
 #   $(call git_diff,php,src test)
 
 define git_diff
-    $(shell .manala/scripts/ls_changed_files.sh --ext=.$(1) $(2))
+	$(shell \
+		for ext in $(if $(1),$(1),"") ; \
+		do \
+			for dir in $(if $(2),$(2),"") ; \
+			do \
+				git --no-pager diff --name-status "$$(git merge-base HEAD origin/master)" \
+					| grep "$${ext}\$$" \
+					| grep "\\s$${dir}" \
+					| grep -v '^D' \
+					| awk '{ print $$NF }' || true ; \
+			done ; \
+		done \
+	)
 endef
