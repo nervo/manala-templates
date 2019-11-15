@@ -33,6 +33,12 @@
     follow: true
   with_items: "{{ deploy_shared_dirs }}"
 
+- name: shared > Ensure directories links are present
+  file:
+    path:  "{{ (deploy_helper.new_release_path ~ '/' ~ item)|dirname }}"
+    state: directory
+  with_items: "{{ deploy_shared_files + deploy_shared_dirs }}"
+
 - name: shared > Links
   file:
     path:  "{{ deploy_helper.new_release_path ~ '/' ~ item }}"
