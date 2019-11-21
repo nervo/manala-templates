@@ -74,8 +74,9 @@ RUN echo "deb https://packages.sury.org/php/ stretch main" > /etc/apt/sources.li
         php{{ .system.php.version }}-xml \
         php{{ .system.php.version }}-mysql \
         php{{ .system.php.version }}-zip \
-        unzip \
     # Composer
+    && apt-get install -y --no-install-recommends \
+        unzip \
     && curl -sSL https://getcomposer.org/installer | php -- --install-dir /usr/local/bin --filename composer
 
 ENV COMPOSER_CACHE_DIR=/srv/.cache/composer
