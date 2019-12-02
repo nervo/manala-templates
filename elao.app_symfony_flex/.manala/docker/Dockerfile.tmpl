@@ -59,7 +59,8 @@ WORKDIR /srv/app
 # Php #
 #######
 
-RUN echo "deb https://packages.sury.org/php/ stretch main" > /etc/apt/sources.list.d/php.list \
+RUN \
+    echo "deb https://packages.sury.org/php/ stretch main" > /etc/apt/sources.list.d/php.list \
     && curl -sSL https://packages.sury.org/php/apt.gpg --output /etc/apt/trusted.gpg.d/php.gpg \
     # Disable irrelevants apt-key warnings
     && export APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE="1" \
@@ -87,7 +88,8 @@ ENV COMPOSER_CACHE_DIR=/srv/.cache/composer
 # NodeJs #
 ##########
 
-RUN echo "deb https://deb.nodesource.com/node_{{ .system.nodejs.version }}.x stretch main" > /etc/apt/sources.list.d/node.list \
+RUN \
+    echo "deb https://deb.nodesource.com/node_{{ .system.nodejs.version }}.x stretch main" > /etc/apt/sources.list.d/node.list \
     && curl -sSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key \
         | apt-key add - \
     && echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list \
