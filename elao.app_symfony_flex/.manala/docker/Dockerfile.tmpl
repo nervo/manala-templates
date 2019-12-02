@@ -108,4 +108,20 @@ ENV NPM_CONFIG_CACHE=/srv/.cache/npm \
     YARN_CACHE_FOLDER=/srv/.cache/yarn
 {{- end }}
 
+{{ if .system.apt.packages -}}
+#######
+# Apt #
+#######
+
+RUN \
+    # Disable irrelevants apt-key warnings
+    export APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE="1" \
+    # Disable all debian user interaction
+    && export DEBIAN_FRONTEND="noninteractive" \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+        {{ .system.apt.packages | join " " }}
+
+{{- end }}
+
 USER app
