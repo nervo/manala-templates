@@ -72,6 +72,9 @@ system:
         User         app
         ForwardAgent yes
         ProxyJump    gateway@bastion.elao.com
+  apt:
+    packages:
+      - pdftk
 ```
 
 ## Releases
