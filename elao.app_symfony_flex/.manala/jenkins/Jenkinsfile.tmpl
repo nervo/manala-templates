@@ -1,0 +1,36 @@
+#!/usr/bin/env groovy
+
+pipeline {
+  agent {
+      dockerfile {
+          dir '.manala/docker'
+      }
+  }
+  options {
+    parallelsAlwaysFailFast()
+  }
+  stages {
+    {{- range $name, $stage := .integration }}
+    stage('{{ $name | title }}') {
+      parallel {
+        {{- range $parallel := $stage }}
+        stage('{{ $parallel.app | title }}') {
+          steps {
+            dir('{{ $parallel.app }}') {
+              {{- range $task := $parallel.tasks }}
+              sh '{{ $task }}'
+              {{- end }}
+            }
+          }
+        }
+        {{- end }}
+      }
+    }
+    {{- end }}
+  }
+  post {
+    always {
+      junit testResults: '**/build/junit/*.xml', allowEmptyResults: true
+    }
+  }
+}

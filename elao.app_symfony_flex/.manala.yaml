@@ -3,6 +3,7 @@ manala:
   sync:
     - .manala/ansible .manala/ansible
     - .manala/docker .manala/docker
+    - .manala/jenkins .manala/jenkins
     - .manala/make .manala/make
     - .manala/.gitignore .manala/.gitignore
     - README.md .manala/README.md

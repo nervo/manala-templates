@@ -3,10 +3,10 @@
 * [Overview](#overview)
 * [Quick start](#quick-start)
 * [System](#system)
+* [Integration](#integration)
 * [Releases](#releases)
 * [Makefile](#makefile)
 * [Git tools](#git-tools)
-* [Jenkins](#jenkins)
 
 ## Overview
 
@@ -58,6 +58,10 @@ App:
 Here is an example of a system configuration in `.manala.yaml`:
 
 ```yaml
+##########
+# System #
+##########
+
 system:
   php:
     version: 7.3
@@ -77,11 +81,49 @@ system:
       - pdftk
 ```
 
+
+## Integration
+
+Here is an example of an integration configuration in `.manala.yaml`:
+
+```yaml
+###############
+# Integration #
+###############
+
+integration:
+  install:
+    - app: api
+      tasks:
+        - make install@integration
+    - app: mobile
+      tasks:
+        - make install@integration
+  lint:
+    - app: api
+      tasks:
+        - make lint@integration    
+    - app: mobile
+      tasks:
+        - make lint@integration
+  test:
+    - app: api
+      tasks:
+        - make test@integration    
+    - app: mobile
+      tasks:
+        - make test@integration
+```
+
 ## Releases
 
 Here is an example of a production/staging release configuration in `.manala.yaml`:
 
 ```yaml
+############
+# Releases #
+############
+
 releases:
 
   - &release
@@ -227,33 +269,4 @@ endif
 ## Show code style errors in every PHP file
 cs-all:
     vendor/bin/php-cs-fixer fix --dry-run --diff
-```
-
-## Jenkins
-
-Resources:
-* https://jenkins.io/doc/book/pipeline/syntax/#parallel
-* https://jenkins.io/blog/2018/07/02/whats-new-declarative-piepline-13x-sequential-stages/
-
-```groovy
-pipeline {
-    agent {
-        dockerfile {
-            filename '.manala/docker/Dockerfile'
-        }
-    }
-    environment {
-        APP_ENV='test'
-    }
-    stages {
-        stage('Test') {
-            steps {
-                sh 'make install@ci'
-                sh 'make cs@ci || true'
-                sh 'make test@ci || true'
-                junit 'build/**/*.xml'
-            }
-        }
-    }
-}
 ```
