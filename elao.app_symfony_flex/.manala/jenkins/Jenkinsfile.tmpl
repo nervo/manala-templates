@@ -6,21 +6,24 @@ pipeline {
           dir '.manala/docker'
       }
   }
-  options {
-    parallelsAlwaysFailFast()
-  }
   stages {
-    {{- range $name, $stage := .integration }}
-    stage('{{ $name | title }}') {
+    {{- range $stage := .integration.stages }}
+    stage('{{ $stage.label }}') {
       parallel {
-        {{- range $parallel := $stage }}
-        stage('{{ $parallel.app | title }}') {
-          steps {
-            dir('{{ $parallel.app }}') {
-              {{- range $task := $parallel.tasks }}
-              sh '{{ $task }}'
-              {{- end }}
+        {{- range $track := $stage.tracks }}
+        stage('{{ $track.app | title }}') {
+          stages {
+            {{- range $stage := $track.stages }}
+            stage('{{ $stage.label }}') {
+              steps {
+                dir('{{ $track.app }}') {
+                  {{- range $task := $stage.tasks }}
+                  sh '{{ $task }}'
+                  {{- end }}
+                }
+              }
             }
+            {{- end }}
           }
         }
         {{- end }}
