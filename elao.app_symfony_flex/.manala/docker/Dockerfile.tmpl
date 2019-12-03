@@ -1,4 +1,10 @@
-FROM debian:stretch-slim
+{{- $debian_releases := dict 8 "jessie" 9 "stretch" 10 "buster" -}}
+{{- $debian_release := index $debian_releases (.system.version|toString) -}}
+
+{{- $ubuntu_releases := dict 8 "trusty" 9 "xenial" 10 "bionic" -}}
+{{- $ubuntu_release := index $ubuntu_releases (.system.version|toString) -}}
+
+FROM debian:{{ $debian_release }}-slim
 
 LABEL maintainer="Elao <contact@elao.com>"
 
@@ -9,7 +15,9 @@ LABEL maintainer="Elao <contact@elao.com>"
 # The 'container' environment variable tells systemd that it's running inside a
 # Docker container environment.
 # It's also internally used for checking we're running inside a container too.
-ENV container docker
+ENV \
+    container="docker" \
+    XDG_CACHE_HOME="~/.cache"
 
 RUN \
     # Disable irrelevants apt-key warnings
@@ -35,32 +43,33 @@ RUN \
     && mkdir --parents /srv \
     && chmod 777 /srv \
     # User
-    && adduser --disabled-password --gecos "" app \
+    && adduser --disabled-password --gecos "" docker \
     # Bash
-    && sed -i 's/^#force_color_prompt=yes/force_color_prompt=yes/' /home/app/.bashrc \
-    && echo "\
-export HISTFILE=/srv/.cache/.bash_history\n" >> /home/app/.bashrc \
+    && sed -i 's/^#force_color_prompt=yes/force_color_prompt=yes/' /home/docker/.bashrc \
     # Sudo
-    && echo "app ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/app \
+    && echo "docker ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/docker \
     # Ansible
-    && echo "deb http://ppa.launchpad.net/ansible/ansible/ubuntu xenial main" > /etc/apt/sources.list.d/ansible.list \
+    && echo "deb http://ppa.launchpad.net/ansible/ansible/ubuntu {{ $ubuntu_release }} main" > /etc/apt/sources.list.d/ansible.list \
     && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 93C4A3FD7BB9C367 \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
         ansible
 
 COPY etc/ssh_config  /etc/ssh/ssh_config
-COPY etc/ansible.cfg /etc/ansible/ansible.cfg
+
+COPY bin/entrypoint /usr/local/bin/entrypoint
+
+ENTRYPOINT ["/usr/local/bin/entrypoint"]
 
 WORKDIR /srv/app
 
-{{ if .system.php -}}
+{{ if .system.php.version -}}
 #######
 # Php #
 #######
 
 RUN \
-    echo "deb https://packages.sury.org/php/ stretch main" > /etc/apt/sources.list.d/php.list \
+    echo "deb https://packages.sury.org/php/ {{ $debian_release }} main" > /etc/apt/sources.list.d/php.list \
     && curl -sSL https://packages.sury.org/php/apt.gpg --output /etc/apt/trusted.gpg.d/php.gpg \
     # Disable irrelevants apt-key warnings
     && export APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE="1" \
@@ -80,16 +89,15 @@ RUN \
         unzip \
     && curl -sSL https://getcomposer.org/installer | php -- --install-dir /usr/local/bin --filename composer
 
-ENV COMPOSER_CACHE_DIR=/srv/.cache/composer
 {{- end }}
 
-{{ if .system.nodejs -}}
+{{ if .system.nodejs.version -}}
 ##########
 # NodeJs #
 ##########
 
 RUN \
-    echo "deb https://deb.nodesource.com/node_{{ .system.nodejs.version }}.x stretch main" > /etc/apt/sources.list.d/node.list \
+    echo "deb https://deb.nodesource.com/node_{{ .system.nodejs.version }}.x {{ $debian_release }} main" > /etc/apt/sources.list.d/node.list \
     && curl -sSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key \
         | apt-key add - \
     && echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list \
@@ -104,8 +112,6 @@ RUN \
         nodejs \
         yarn
 
-ENV NPM_CONFIG_CACHE=/srv/.cache/npm \
-    YARN_CACHE_FOLDER=/srv/.cache/yarn
 {{- end }}
 
 {{ if .system.apt.packages -}}
@@ -124,4 +130,4 @@ RUN \
 
 {{- end }}
 
-USER app
+USER docker
