@@ -88,34 +88,116 @@ system:
 
 Here is an example of an integration configuration in `.manala.yaml`:
 
+In this example we have two tracks : `/api` and `/mobile`, corresponding to two different sub-projects.
+On each sub-project we have _install_, _lint_ and _test_ stages.
+
 ```yaml
 ###############
 # Integration #
 ###############
 
 integration:
-  install:
-    - app: api
-      tasks:
-        - make install@integration
-    - app: mobile
-      tasks:
-        - make install@integration
-  lint:
-    - app: api
-      tasks:
-        - make lint@integration    
-    - app: mobile
-      tasks:
-        - make lint@integration
-  test:
-    - app: api
-      tasks:
-        - make test@integration    
-    - app: mobile
-      tasks:
-        - make test@integration
+  stages:
+    - label: Integration
+      tracks:
+        - app: api
+          stages:
+            - label: Install
+              tasks:
+                - make install@integration
+            - label: Lint
+              tasks:
+                - make lint@integration
+            - label: Test
+              tasks:
+                - make test@integration
+        - app: mobile
+          stages:
+            - label: Install
+              tasks:
+                - make install@integration
+            - label: Lint
+              tasks:
+                - make lint@integration
+            - label: Test
+              tasks:
+                - make test@integration
 ```
+
+Add in your `api/Makefile`:
+
+```makefile
+###########
+# Install #
+###########
+#...
+
+install@integration: export SYMFONY_ENV = test
+install@integration:
+	# Composer
+	composer install --verbose --no-progress --no-interaction --no-scripts
+
+########
+# Lint #
+########
+# ...
+
+lint@integration:
+	mkdir --parents build/junit
+	vendor/bin/php-cs-fixer fix --dry-run --diff --format=junit > build/junit/php-cs-fixer.xml
+
+########
+# Test #
+########
+# ...
+
+test@integration: export SYMFONY_ENV = test
+test@integration:
+	# Update DB if schema differs:
+	APP_DEBUG=1 bin/console doctrine:schema:update -q 2> /dev/null || \
+	(\
+		(bin/console doctrine:database:drop --ansi --force --if-exists 2> /dev/null || true) && \
+		bin/console doctrine:database:create --ansi --if-not-exists && \
+		bin/console doctrine:schema:update --ansi --force \
+	)
+	# PHPUnit
+	mkdir --parents build/junit
+	bin/phpunit --log-junit build/junit/phpunit.xml
+```
+
+Add in your `mobile/Makefile`:
+
+```makefile
+###########
+# Install #
+###########
+#...
+
+install@integration: export NODE_ENV = development
+install@integration:
+	yarn install
+
+########
+# Lint #
+########
+# ...
+
+lint@integration: export ESLINT_JUNIT_OUTPUT=build/junit/eslint.xml
+lint@integration:
+	npx eslint src/* --ext .js,.json -f ./node_modules/eslint-junit/index.js
+
+########
+# Test #
+########
+# ...
+
+test@integration: export JEST_JUNIT_OUTPUT_DIR=build/junit
+test@integration: export JEST_JUNIT_OUTPUT_NAME=jest.xml
+test@integration:
+	npx jest --ci --reporters=default --reporters=jest-junit
+```
+
+_Note:_ You'll need `jest-junit` and `eslint-junit` packages :  `yarn --dev add eslint-junit jest-junit`.
 
 ## Releases
 
