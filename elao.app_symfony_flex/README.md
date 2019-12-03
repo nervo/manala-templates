@@ -63,6 +63,8 @@ Here is an example of a system configuration in `.manala.yaml`:
 ##########
 
 system:
+  version: 9
+  hostname: app.vm
   php:
     version: 7.3
   nodejs:
@@ -75,7 +77,7 @@ system:
       Host *.elao.local
         User         app
         ForwardAgent yes
-        ProxyJump    gateway@bastion.elao.com
+        ProxyCommand ssh gateway@bastion.elao.com -W %h:%p
   apt:
     packages:
       - pdftk
