@@ -32,8 +32,7 @@ define docker_run
 		--mount type=bind,consistency=cached,source=$(HOME)/.gitconfig,target=/home/docker/.gitconfig \
 		--env XDG_CACHE_HOME=/srv/.cache \
 		$${ID} \
-		ssh-agent \
-			$(if $(1),$(strip $(1)),bash)
+		$(if $(1),$(strip $(1)),bash)
 endef
 
 ifneq ($(container),docker)
