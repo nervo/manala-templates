@@ -28,10 +28,11 @@ define docker_run
 		--interactive \
 		--hostname {{ .system.hostname }} \
 		--mount type=bind,consistency=delegated,source=$(CURDIR),target=/srv/app \
+		--env XDG_CACHE_HOME=/srv/.cache \
 		--mount type=bind,consistency=delegated,source=$(CURDIR)/.manala/.cache/docker,target=/srv/.cache \
+		--env SSH_KEY=/home/docker/.ssh/id_rsa \
 		--mount type=bind,consistency=cached,source=$(HOME)/.ssh/id_rsa,target=/home/docker/.ssh/id_rsa \
 		--mount type=bind,consistency=cached,source=$(HOME)/.gitconfig,target=/home/docker/.gitconfig \
-		--env XDG_CACHE_HOME=/srv/.cache \
 		$${ID} \
 		$(if $(1),$(strip $(1)),bash)
 endef
