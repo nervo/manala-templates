@@ -11,16 +11,22 @@ pipeline {
     stage('{{ $stage.label }}') {
       parallel {
         {{- range $track := $stage.tracks }}
-        stage('{{ $track.app | title }}') {
+        stage('{{ default "App" (default ((default "" $track.app) | title) $track.label) }}') {
           stages {
-            {{- range $stage := $track.stages }}
-            stage('{{ $stage.label }}') {
+            {{- range $step := $track.steps }}
+            stage('{{ $step.label }}') {
               steps {
-                dir('{{ $track.app }}') {
-                  {{- range $task := $stage.tasks }}
+                {{- if $track.app }}
+                dir('{{ default $track.app $track.app_dir }}') {
+                  {{- range $task := $step.tasks }}
                   sh '{{ $task }}'
                   {{- end }}
                 }
+                {{- else }}
+                {{- range $task := $step.tasks }}
+                sh '{{ $task }}'
+                {{- end }}
+                {{- end }}
               }
             }
             {{- end }}

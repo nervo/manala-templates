@@ -100,8 +100,10 @@ integration:
   stages:
     - label: Integration
       tracks:
-        - app: api
-          stages:
+        - #label: MyApi # Optionnal
+          #app: api # Optionnal
+          #app_dir: api # Optionnal, <app> by default
+          steps:
             - label: Install
               tasks:
                 - make install@integration
@@ -112,7 +114,7 @@ integration:
               tasks:
                 - make test@integration
         - app: mobile
-          stages:
+          steps:
             - label: Install
               tasks:
                 - make install@integration
