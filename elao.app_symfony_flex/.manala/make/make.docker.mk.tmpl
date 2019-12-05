@@ -15,7 +15,8 @@
 #   $(call docker_run, whoami)
 
 define docker_run
-	ID=$$( \
+	$(call message, Building docker image...) \
+	&& ID=$$( \
 		docker build \
 			--quiet \
 			.manala/docker \
