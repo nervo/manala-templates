@@ -1,27 +1,23 @@
 #!/usr/bin/env bash
 set -e
 
-# Note: Composer and Yarn both follows XDG Base Directory Specification. For the
-#       others, related environment variables must be expanded at runtime.
+# Cache (Composer and Yarn both follows XDG Base Directory Specification. For
+# the others, related environment variables must be expanded at runtime)
+if [ -n "${XDG_CACHE_HOME}" ]; then
+    # Bash
+    export HISTFILE="${XDG_CACHE_HOME}/.bash_history"
+    # Ansible
+    export ANSIBLE_CACHE_PLUGIN_CONNECTION="${XDG_CACHE_HOME}/ansible"
+    {{- if .system.nodejs.version }}
+    # Npm
+    export NPM_CONFIG_CACHE="${XDG_CACHE_HOME}/npm"
+    {{- end }}
+fi
 
-# Bash
-export HISTFILE="${XDG_CACHE_HOME}/.bash_history"
-
-# Ansible
-export ANSIBLE_GATHER_SUBSET="all,!hardware"
-export ANSIBLE_STDOUT_CALLBACK="skippy"
-export ANSIBLE_RETRY_FILES_ENABLED="0"
-export ANSIBLE_CACHE_PLUGIN="jsonfile"
-export ANSIBLE_CACHE_PLUGIN_CONNECTION="${XDG_CACHE_HOME}/ansible" \
-export ANSIBLE_SSH_PIPELINING="1"
-
-{{ if .system.nodejs.version -}}
-# Npm
-export NPM_CONFIG_CACHE="${XDG_CACHE_HOME}/npm"
-{{- end }}
-
-# Ssh
-eval `ssh-agent` 1>/dev/null
-ssh-add 2>/dev/null
+# Ssh key
+if [ -n "${SSH_KEY}" ]; then
+    eval `ssh-agent` 1>/dev/null
+    ssh-add ${SSH_KEY} 2>/dev/null
+fi
 
 exec "$@"

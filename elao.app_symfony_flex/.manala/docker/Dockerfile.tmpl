@@ -15,9 +15,7 @@ LABEL maintainer="Elao <contact@elao.com>"
 # The 'container' environment variable tells systemd that it's running inside a
 # Docker container environment.
 # It's also internally used for checking we're running inside a container too.
-ENV \
-    container="docker" \
-    XDG_CACHE_HOME="~/.cache"
+ENV container="docker"
 
 RUN \
     # Disable irrelevants apt-key warnings
@@ -55,7 +53,14 @@ RUN \
     && apt-get install -y --no-install-recommends \
         ansible
 
-COPY etc/ssh_config  /etc/ssh/ssh_config
+COPY etc/ssh_config /etc/ssh/ssh_config
+
+ENV \
+    ANSIBLE_GATHER_SUBSET="all,!hardware" \
+    ANSIBLE_STDOUT_CALLBACK="skippy" \
+    ANSIBLE_RETRY_FILES_ENABLED="0" \
+    ANSIBLE_CACHE_PLUGIN="jsonfile" \
+    ANSIBLE_SSH_PIPELINING="1"
 
 COPY bin/entrypoint /usr/local/bin/entrypoint
 
