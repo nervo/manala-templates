@@ -69,6 +69,7 @@ ENTRYPOINT ["/usr/local/bin/entrypoint"]
 WORKDIR /srv/app
 
 {{ if .system.php.version -}}
+{{- $php := .system.php -}}
 #######
 # Php #
 #######
@@ -82,13 +83,10 @@ RUN \
     && export DEBIAN_FRONTEND="noninteractive" \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
-        php{{ .system.php.version }}-cli \
-        php{{ .system.php.version }}-intl \
-        php{{ .system.php.version }}-curl \
-        php{{ .system.php.version }}-mbstring \
-        php{{ .system.php.version }}-xml \
-        php{{ .system.php.version }}-mysql \
-        php{{ .system.php.version }}-zip \
+        php{{ $php.version }}-cli \
+        {{- range $extension := $php.extensions }}
+        php{{ $php.version }}-{{ $extension }} \
+        {{- end }}
     # Composer
     && apt-get install -y --no-install-recommends \
         unzip \
@@ -97,12 +95,13 @@ RUN \
 {{- end }}
 
 {{ if .system.nodejs.version -}}
+{{- $nodejs := .system.nodejs -}}
 ##########
 # NodeJs #
 ##########
 
 RUN \
-    echo "deb https://deb.nodesource.com/node_{{ .system.nodejs.version }}.x {{ $debian_release }} main" > /etc/apt/sources.list.d/node.list \
+    echo "deb https://deb.nodesource.com/node_{{ $nodejs.version }}.x {{ $debian_release }} main" > /etc/apt/sources.list.d/node.list \
     && curl -sSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key \
         | apt-key add - \
     && echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list \
@@ -120,6 +119,7 @@ RUN \
 {{- end }}
 
 {{ if .system.apt.packages -}}
+{{- $apt := .system.apt -}}
 #######
 # Apt #
 #######
@@ -131,7 +131,7 @@ RUN \
     && export DEBIAN_FRONTEND="noninteractive" \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
-        {{ .system.apt.packages | join " " }}
+        {{ $apt.packages | join " " }}
 
 {{- end }}
 

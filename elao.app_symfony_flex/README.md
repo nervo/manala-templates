@@ -67,6 +67,14 @@ system:
   hostname: app.vm
   php:
     version: 7.3
+    extensions:
+      # Symfony
+      - intl
+      - curl
+      - mbstring
+      - xml
+      # App
+      - mysql
   nodejs:
     version: 12
   ssh:
