@@ -1,12 +1,47 @@
+{{- define "integration" -}}
+  {{- $integration := .integration -}}
+  {{- $indent := .indent -}}
+  {{- range $task := $integration.tasks }}
+    stage('{{ template "task_label" $task }}') {
+      {{- if $task.tasks }}
+      stages {
+        {{- template "integration" dict "integration" $task "indent" (add $indent 2) }}
+      }
+      {{- end }}
+    }
+  {{- end }}
+{{- end -}}
+
+{{- define "task_label" -}}
+  {{- if .label -}}
+    {{- .label -}}
+  {{- else if .app -}}
+    {{- .app | title -}}
+  {{- else if and (.shell) (regexMatch "^make .+@.+$" (default "" .shell)) -}}
+    {{- (regexReplaceAll "^make (.+)@.+$" .shell "${1}") | replace "." " - " | title -}}
+  {{- else -}}
+    Task
+  {{- end }}
+{{- end -}}
+
 #!/usr/bin/env groovy
 
 pipeline {
   agent {
-      dockerfile {
-          dir '.manala/docker'
-      }
+    dockerfile {
+      dir '.manala/docker'
+    }
   }
   stages {
+    {{- if not .integration.tasks }}
+    stage('¯\\_(ツ)_/¯') {
+      steps {
+        echo 'Testing is doubting...'
+      }
+    }
+    {{- else }}
+    {{- template "integration" dict "integration" .integration "indent" 6 }}
+
     {{- range $stage := .integration.stages }}
     stage('{{ $stage.label }}') {
       parallel {
@@ -41,5 +76,6 @@ pipeline {
     always {
       junit testResults: '**/report/junit/*.xml', allowEmptyResults: true
     }
+  {{- end }}
   }
 }
