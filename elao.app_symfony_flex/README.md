@@ -153,8 +153,8 @@ install@integration:
 # ...
 
 lint@integration:
-	mkdir --parents build/junit
-	vendor/bin/php-cs-fixer fix --dry-run --diff --format=junit > build/junit/php-cs-fixer.xml
+	mkdir --parents report/junit
+	vendor/bin/php-cs-fixer fix --dry-run --diff --format=junit > report/junit/php-cs-fixer.xml
 
 ########
 # Test #
@@ -171,8 +171,8 @@ test@integration:
 		bin/console doctrine:schema:update --ansi --force \
 	)
 	# PHPUnit
-	mkdir --parents build/junit
-	bin/phpunit --log-junit build/junit/phpunit.xml
+	mkdir --parents report/junit
+	bin/phpunit --log-junit report/junit/phpunit.xml
 ```
 
 Add in your `mobile/Makefile`:
@@ -192,7 +192,7 @@ install@integration:
 ########
 # ...
 
-lint@integration: export ESLINT_JUNIT_OUTPUT=build/junit/eslint.xml
+lint@integration: export ESLINT_JUNIT_OUTPUT=report/junit/eslint.xml
 lint@integration:
 	npx eslint src/* --ext .js,.json -f ./node_modules/eslint-junit/index.js
 
@@ -201,7 +201,7 @@ lint@integration:
 ########
 # ...
 
-test@integration: export JEST_JUNIT_OUTPUT_DIR=build/junit
+test@integration: export JEST_JUNIT_OUTPUT_DIR=report/junit
 test@integration: export JEST_JUNIT_OUTPUT_NAME=jest.xml
 test@integration:
 	npx jest --ci --reporters=default --reporters=jest-junit
